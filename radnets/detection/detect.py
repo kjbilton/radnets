@@ -4,7 +4,6 @@ Tools for performing binary anomaly detection for a single spectrum
 """
 import numpy as np
 import torch
-
 from .tools import _preprocess, _inv_preprocess, get_deviance, EPS
 
 
@@ -45,12 +44,9 @@ def feedforward_deviance_threshold(model, data_loader, far, preprocess):
     threshold : float
     deviance : numpy array
     """
-
-    # Container for deviance
     deviance = []
 
     for X in data_loader:
-
         # Prepare spectra for model
         Xhat = X.float().numpy()
         Xhat = _preprocess(model, X, preprocess)
@@ -108,7 +104,6 @@ def recurrent_deviance_threshold(model, data_loader, far, preprocess):
     deviance = []
 
     for X, X_lens in data_loader:
-
         # Prepare spectra for model
         Xhat = X.float().numpy()
         Xhat = _preprocess(model, X, preprocess)

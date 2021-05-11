@@ -9,8 +9,6 @@ from radnets.models.utils.constants import activations
 
 
 class RecurrentID(BaseModel):
-    """
-    """
     def __init__(self, params):
         super().__init__(params)
 
@@ -18,9 +16,6 @@ class RecurrentID(BaseModel):
         self.recurrent, self.recurrent_post = self._build_recurrent(params)
         self.rear_end = self._build_rear_end(params)
 
-    ####################################################################
-    # High-level functions
-    ####################################################################
     def train_and_validate(self, loaders, optimizer, filename=None, name=None,
                            scheduler=None):
         """
@@ -170,9 +165,6 @@ class RecurrentID(BaseModel):
         self.thresholds = thresh
         return metrics
 
-    ####################################################################
-    # Internal functions
-    ####################################################################
     def _build_recurrent(self, params):
         params = params['architecture']['recurrent'][0]
         rnn_type = params['rnn_type']

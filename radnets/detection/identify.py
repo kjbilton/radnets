@@ -5,8 +5,6 @@ Tools for performing identification for a single spectrum
 import numpy as np
 import torch
 import torch.nn.functional as F
-
-
 from .tools import _preprocess
 
 

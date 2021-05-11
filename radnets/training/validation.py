@@ -9,13 +9,10 @@ def predict_regression(model, thresholds, data_loader):
     predictions
     labels
     """
-    # Containers for output
     predictions = []
     labels = []
 
     for X, y in data_loader:
-
-        # Run inference
         X = X.to(model.device)
         outputs = model(X)
         outputs = F.softmax(outputs, dim=1).detach().cpu().numpy()
@@ -47,13 +44,10 @@ def predict_single_label(model, data_loader):
     predictions
     labels
     """
-    # Containers for output
     predictions = []
     labels = []
 
     for X, y in data_loader:
-
-        # Run inference
         X = X.to(model.device)
         outputs = model(X)
         outputs = F.softmax(outputs, dim=1).detach().cpu().numpy()

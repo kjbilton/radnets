@@ -10,11 +10,8 @@ class RecurrentAutoencoder(BaseAutoencoder):
         super().__init__(params)
 
         assert 'recurrent' in params['architecture']
-        self.recurrent = self.build_recurrent(params)
+        self.recurrent = self._build_recurrent(params)
 
-    ####################################################################
-    # High-level methods
-    ####################################################################
     def train_and_validate(self, loaders, optimizer, name=None,
                            scheduler=None):
         """
@@ -107,7 +104,6 @@ class RecurrentAutoencoder(BaseAutoencoder):
         X_lens :
             Contains length of each run
         """
-
         # Grab dimensions for reshaping later
         batch_size, run_len, n_bins = X.size()
 
@@ -148,13 +144,9 @@ class RecurrentAutoencoder(BaseAutoencoder):
 
         # Reshape for turning back into runs
         X = X.view(batch_size, run_len, -1)
-
         return X
 
-    ####################################################################
-    # Internal methods
-    ####################################################################
-    def build_recurrent(self, params):
+    def _build_recurrent(self, params):
         params = params['architecture']['recurrent'][0]
         rnn_type = params['rnn_type']
         activation = params['activation']
@@ -177,5 +169,4 @@ class RecurrentAutoencoder(BaseAutoencoder):
         # Update the current number of features
         self.ndof = n_nodes_out
         self.feature_size_min = n_nodes_out
-
         return _layer

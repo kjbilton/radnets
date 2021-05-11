@@ -89,7 +89,6 @@ class FeedForwardID(BaseModel):
                 else:
                     scheduler.step()
 
-        # Put the model back in evaluation mode
         self.eval()
 
     def forward(self, X):

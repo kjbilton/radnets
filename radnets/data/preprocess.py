@@ -1,7 +1,5 @@
 import numpy as np
-
-EPS = 1e-7
-
+from radnets.utils.constants import EPS
 
 def standardize_preprocess(X, mu, sigma):
     """

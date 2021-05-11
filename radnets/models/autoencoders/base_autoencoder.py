@@ -180,8 +180,6 @@ class BaseAutoencoder(nn.Module):
         """
         Build the decoder submodule from the specified parameters
         """
-
-        # Container for encoder operations
         modules = []
 
         decoder_params = params['architecture']['decoder']
@@ -258,9 +256,6 @@ class BaseAutoencoder(nn.Module):
     # Loss functions
     ####################################################################
     def poisson_loss(self, Xhat, X, complete=True, eps=1.E-7):
-        """
-        Loss function
-        """
         Xhat = F.relu(Xhat) + eps
 
         # Compute Poisson loss
@@ -278,18 +273,12 @@ class BaseAutoencoder(nn.Module):
         return _loss
 
     def poisson_log_loss(self, Xhat, X, complete=True, eps=1.E-7):
-        """
-        Loss function
-        """
         # Transform input and output spectra to count space
         Xhat = F.relu(torch.exp(Xhat) - 1)
         X = F.relu(torch.exp(X) - 1)
         return self.poisson_loss(Xhat, X)
 
     def poisson_std_loss(self, Xhat, X, complete=True, eps=1.E-7):
-        """
-        Loss function
-        """
         # Transform input and output spectra to count space
         Xhat = F.relu(Xhat * self.sigma_tensor + self.mu_tensor)
         X = F.relu(X * self.sigma_tensor + self.mu_tensor)

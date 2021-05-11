@@ -8,9 +8,6 @@ class FeedforwardAutoencoder(BaseAutoencoder):
     def __init__(self, params):
         super().__init__(params)
 
-    ####################################################################
-    # High-level methods
-    ####################################################################
     def train_and_validate(self, loaders, optimizer, name=None,
                            scheduler=None):
         """
