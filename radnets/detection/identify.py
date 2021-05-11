@@ -4,6 +4,7 @@ Tools for performing identification for a single spectrum
 """
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from .tools import _preprocess, _inv_preprocess
 
@@ -46,3 +47,43 @@ def recurrent_regression_id(model, X, preprocess):
     alarm_mask = (outputs_norm > 1).any(axis=1)
     predictions[alarm_mask] = outputs_norm[alarm_mask].argmax(axis=1) + 1
     return predictions
+
+def compute_id_thresholds(model, data_loader, far):
+    """
+    Computes a threshold for each source individually.
+    """
+    predictions = []
+
+    for X, y in data_loader:
+        X = X.float()
+        X = X.to(model.device)
+        yhat = F.softmax(model(X), dim=1)
+        yhat = yhat.detach().cpu().numpy()
+        predictions.append(yhat)
+
+    predictions = np.vstack(predictions)[:, 1:]
+    predictions_sorted = np.sort(predictions, axis=0)[::-1]
+    n_fa = int(len(predictions_sorted) * far / (y.shape[1] - 1))
+    thresh = predictions_sorted[n_fa]
+    return thresh, predictions
+
+def recurrent_id_threshold(model, data_loader, far):
+    """
+    Computes threshold for recurrent ID models
+    """
+    predictions = []
+
+    for X, y, lens in data_loader:
+        X = X.float().to(model.device)
+
+        # Perform inference
+        Yhat = model(X, lens).squeeze()
+        Yhat = F.softmax(Yhat, dim=1).detach().cpu().numpy()
+        predictions.append(Yhat)
+
+    predictions = np.vstack(predictions)[:, 1:]
+    predictions_sorted = np.sort(predictions, axis=0)[::-1]
+
+    n_fa = int(len(predictions_sorted) * far / (y.shape[2] - 1))
+    thresh = predictions_sorted[n_fa]
+    return thresh, predictions
