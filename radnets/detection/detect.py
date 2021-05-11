@@ -4,7 +4,9 @@ Tools for performing binary anomaly detection for a single spectrum
 """
 import numpy as np
 import torch
-from .tools import _preprocess, _inv_preprocess, get_deviance, EPS
+from .tools import get_deviance
+from ..utils.constants import EPS
+from ..data.preprocess import _preprocess, _inv_preprocess
 
 
 def feedforward_deviance(model, X, preprocess):
