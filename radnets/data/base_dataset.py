@@ -4,7 +4,7 @@ from .preprocess import PREPROCESS
 
 
 class BaseDataset(Dataset):
-    def __init__(self, spectra, indices, preprocess=None, labels=None):
+    def __init__(self, spectra, indices, preprocess='none', labels=None):
         """
         Parameters
         ==========
