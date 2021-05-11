@@ -1,7 +1,7 @@
 import torch
 from torch import optim
 
-from radnets.training.early_stopping import EarlyStopping
+from ...training.early_stopping import EarlyStopping
 from .base_id import BaseModel
 
 

@@ -4,9 +4,9 @@ Base class for all autoencoder models.
 import torch
 import torch.nn.functional as F
 from torch import nn
-from radnets.models.utils.view import View
-from radnets.models.utils.constants import activations
-from radnets.training.early_stopping import EarlyStopping
+from ..utils.view import View
+from ..utils.constants import activations
+from ...training.early_stopping import EarlyStopping
 
 
 class BaseAutoencoder(nn.Module):
