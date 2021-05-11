@@ -4,62 +4,70 @@ EPS = 1e-7
 
 
 def standardize_preprocess(X, mu, sigma):
+    """
+    Standardize the input data `X` by mean subtraction and scaling by the
+    variance.
+    """
     return (X - mu) / (sigma + EPS)
 
 
-def log_preprocess(X):
-    return np.log(X + 1)
-
-
-def norm_log_preprocess(X):
-    A = X + 1
-
-    if len(X.shape) > 1:
-        B = A.sum(axis=1)[:, None]
-    else:
-        B = A.sum()
-
-    C = np.log(A / B)
-
-    if len(X.shape) > 1:
-        D = - C.min(axis=1)[:, None]
-    else:
-        D = - C.min()
-
-    Xprime = C / D + 1
-
-    return Xprime
-
-
-# Inverse transforms
 def inv_standardize_preprocess(Xprime, mu, sigma):
+    """
+    Inverse of standardization: transforms a standarized spectrum using
+    mean and variance.
+    """
     return Xprime * (sigma + EPS) + mu
 
 
+def log_preprocess(X):
+    """
+    Log-preprocessing of a spectrum.
+    """
+    return np.log(X + 1)
+
+
 def inv_log_preprocess(Xprime):
+    """
+    Inverse of log-preprocessing.
+    """
     return np.exp(Xprime) - 1
 
 
-def inv_norm_log_preprocess(Xprime, X):
-    # Compute normalization terms for inverse
+def norm_log_preprocess(X):
+    """
+    Normalized log preprocessing.
+    """
     A = X + 1
-
     if len(X.shape) > 1:
         B = A.sum(axis=1)[:, None]
     else:
         B = A.sum()
-
     C = np.log(A / B)
-
     if len(X.shape) > 1:
         D = - C.min(axis=1)[:, None]
     else:
         D = - C.min()
-    # Invert
+    Xprime = C / D + 1
+    return Xprime
+
+
+def inv_norm_log_preprocess(Xprime, X):
+    """
+    Inverse of normalized log preprocessing.
+    """
+    A = X + 1
+    if len(X.shape) > 1:
+        B = A.sum(axis=1)[:, None]
+    else:
+        B = A.sum()
+    C = np.log(A / B)
+    if len(X.shape) > 1:
+        D = - C.min(axis=1)[:, None]
+    else:
+        D = - C.min()
     Cprime = (Xprime - 1) * D
     Aprime = np.exp(Cprime) * B
     Xhat = Aprime - 1
-
     return Xhat
 
 

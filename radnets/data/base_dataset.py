@@ -1,8 +1,9 @@
 from functools import partial
 from torch.utils.data import Dataset
-
 from .preprocess import (log_preprocess, norm_log_preprocess,
                          standardize_preprocess)
+
+
 PREPROCESS_FUNCTIONS = {'none': lambda x: x, 'log': log_preprocess,
                         'normlog': norm_log_preprocess,
                         'standardize': standardize_preprocess,
