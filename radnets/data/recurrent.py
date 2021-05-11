@@ -1,5 +1,4 @@
 from .base_dataset import BaseDataset
-from .preprocess import EPS
 
 class RecurrentDataset(BaseDataset):
     def _compute_mean_variance(self, spectra, labels):
@@ -11,7 +10,7 @@ class RecurrentDataset(BaseDataset):
         self.mu = background.mean(axis=0).values
 
         if self.preprocess == 'standardize':
-            self.sigma = background.std(axis=0, ddof=1).values + EPS
+            self.sigma = background.std(axis=0, ddof=1).values
         elif preprocess == 'mean_center':
             self.sigma = np.ones_like(self.mu)
 
