@@ -7,6 +7,12 @@ The goal of spectral anomaly detection is to flag spectra which deviate from ord
 Additionally, spectral identification classifies which type of radioactive sources are found in `x`, if any.
 This project uses `pytorch` for both spectral anomaly detection and identification.
 
+## Features
+- Spectral anomaly detection using autoencoders (see `radnets.models.autoencoders`)
+- Spectral identification (see `radnets.models.identification`)
+- Both detection and identification methods can be either feedforward or recurrent. Using recurrent models allows temporal information (i.e., features across series of spectra) to be leveraged to enhance detection capabilities.
+- Models are based on specifying `YAML` configuration files: the architecture is specified, and the the model class will automatically generate the model.
+
 ## Structure
 - `radnets.data`
   - Tools for preprocessing data and custom `pytorch` `Datasets` and `Dataloaders` used in training models.
