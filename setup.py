@@ -6,5 +6,6 @@ setup(
     description='Spectral gamma-ray detection with PyTorch',
     author='Kyle J. Bilton',
     author_email='kjbilton@gmail.com',
-    packages=['radnets'],
+    packages=['radnets', 'radnets/data', 'radnets/detection',
+              'radnets/models', 'radnets/training', 'radnets/utils'],
 )
