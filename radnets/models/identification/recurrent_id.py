@@ -1,13 +1,13 @@
 import torch
 from torch import nn
 from torch import optim
-import torch.nn.functional as F
 
 from .base_id import BaseModel
 from ...training.early_stopping import EarlyStopping
 from radnets.detection.thresholds import recurrent_id_threshold
 
-RECURRENT_LAYERS = {'rnn' : nn.RNN, 'lstm' : nn.LSTM, 'gru' : nn.GRU}
+RECURRENT_LAYERS = {'rnn': nn.RNN, 'lstm': nn.LSTM, 'gru': nn.GRU}
+
 
 class RecurrentID(BaseModel):
     """
@@ -50,7 +50,7 @@ class RecurrentID(BaseModel):
             msg = f'Epoch {str(epoch).zfill(3)}. '
 
             # Switch between training and validation
-            for mode in ['training' ,'validation']:
+            for mode in ['training', 'validation']:
 
                 if mode == 'training':
                     self.train()
@@ -71,7 +71,8 @@ class RecurrentID(BaseModel):
                     # Perform inference
                     yhat = self(X, lens)
 
-                    X = torch.cat([X[idx][:lens[idx]] for idx in range(len(X))])
+                    X = torch.cat([X[idx][:lens[idx]]
+                                  for idx in range(len(X))])
                     y = torch.cat([y[idx][:lens[idx]]for idx in range(len(y))])
                     yhat = torch.cat([yhat[idx][:lens[idx]]
                                       for idx in range(len(yhat))])
@@ -183,14 +184,13 @@ class RecurrentID(BaseModel):
         input_size = self.input_sizes[-1]
 
         if rnn_type == 'rnn':
-            l = RECURRENT_LAYERS[rnn_type](input_size, n_nodes_out,
-                                           bias=params['bias'],
-                                           num_layers=params['num_layers'],
-                                           nonlinearity=activation)
+            _layer = RECURRENT_LAYERS[rnn_type](
+                input_size, n_nodes_out, bias=params['bias'],
+                num_layers=params['num_layers'], nonlinearity=activation)
         else:
-            l = RECURRENT_LAYERS[rnn_type](input_size, n_nodes_out,
-                                           num_layers=params['num_layers'],
-                                           bias=params['bias'])
+            _layer = RECURRENT_LAYERS[rnn_type](
+                input_size, n_nodes_out, num_layers=params['num_layers'],
+                bias=params['bias'])
 
         self.input_sizes.append(n_nodes_out)
 
@@ -200,4 +200,4 @@ class RecurrentID(BaseModel):
             if params['dropout']:
                 modules.append(nn.Dropout(p=params['dropout']))
 
-        return l, nn.Sequential(*modules)
+        return _layer, nn.Sequential(*modules)

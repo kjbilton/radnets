@@ -1,8 +1,10 @@
 import torch
 from torch import optim
 
+
 from radnets.detection.thresholds import feedforward_deviance_threshold
 from .base_autoencoder import BaseAutoencoder
+
 
 class FeedforwardAutoencoder(BaseAutoencoder):
     def __init__(self, params):
@@ -11,7 +13,8 @@ class FeedforwardAutoencoder(BaseAutoencoder):
     ####################################################################
     # High-level methods
     ####################################################################
-    def train_and_validate(self, loaders, optimizer, name=None, scheduler=None):
+    def train_and_validate(self, loaders, optimizer, name=None,
+                           scheduler=None):
         """
         loaders : dict, keys = ['training', 'validation']
             Dictorary of DataLoaders for training and validation data.
@@ -29,7 +32,7 @@ class FeedforwardAutoencoder(BaseAutoencoder):
             msg = f'Epoch {str(epoch).zfill(3)}. '
 
             # Switch between training and validation
-            for mode in ['training' ,'validation']:
+            for mode in ['training', 'validation']:
                 if mode == 'training':
                     self.train()
                 else:

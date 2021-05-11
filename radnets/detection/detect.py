@@ -5,7 +5,8 @@ Tools for performing binary anomaly detection for a single spectrum
 import numpy as np
 import torch
 
-from .tools import _preprocess, _inv_preprocess
+from .tools import _preprocess, _inv_preprocess, get_deviance, EPS
+
 
 def feedforward_deviance(model, X, preprocess):
     """
@@ -24,8 +25,9 @@ def feedforward_deviance(model, X, preprocess):
     Xhat = np.maximum(Xhat, EPS)
 
     # Perform detection
-    deviance = pg.deviance(n=X, lam=Xhat)
+    deviance = get_deviance(n=X, lam=Xhat)
     return int(any(deviance > model.threshold))
+
 
 def feedforward_deviance_threshold(model, data_loader, far, preprocess):
     """
@@ -49,15 +51,9 @@ def feedforward_deviance_threshold(model, data_loader, far, preprocess):
 
     for X in data_loader:
 
-        # Perform preprocessing
+        # Prepare spectra for model
         Xhat = X.float().numpy()
-
-        # Preprocess
-        if preprocess == 'standardize':
-            Xhat = PREPROCESS[preprocess](Xhat, model.mu, model.sigma)
-        else:
-            Xhat = PREPROCESS[preprocess](Xhat)
-
+        Xhat = _preprocess(model, X, preprocess)
         Xhat = torch.tensor(Xhat).float().to(model.device)
 
         # Run inference
@@ -66,18 +62,11 @@ def feedforward_deviance_threshold(model, data_loader, far, preprocess):
         X = X.numpy() + EPS
 
         # Inverse preprocessing
-        if preprocess == 'standardize':
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat, model.mu, model.sigma)
-        elif preprocess in ['normalize', 'normlog']:
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat, X)
-        else:
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat)
-
-        # Floor everything at 0
+        Xhat = _inv_preprocess(model, X, Xhat, preprocess)
         Xhat = np.maximum(Xhat, EPS)
 
         # Compute p-values for Poisson deviance
-        _deviance = pg.deviance(n=X, lam=Xhat)
+        _deviance = get_deviance(n=X, lam=Xhat)
         deviance.append(_deviance)
 
     deviance = np.hstack(deviance)
@@ -87,6 +76,7 @@ def feedforward_deviance_threshold(model, data_loader, far, preprocess):
     deviance_sorted = np.sort(deviance)[::-1]
     thresh = deviance_sorted[n_fa]
     return thresh, deviance
+
 
 def recurrent_deviance(model, X, preprocess):
     """
@@ -107,8 +97,9 @@ def recurrent_deviance(model, X, preprocess):
     Xhat = np.maximum(Xhat, EPS)
 
     # Perform detection
-    deviance = pg.deviance(n=X, lam=Xhat)
+    deviance = get_deviance(n=X, lam=Xhat)
     return int(any(deviance > model.threshold))
+
 
 def recurrent_deviance_threshold(model, data_loader, far, preprocess):
     """
@@ -118,17 +109,13 @@ def recurrent_deviance_threshold(model, data_loader, far, preprocess):
 
     for X, X_lens in data_loader:
 
+        # Prepare spectra for model
         Xhat = X.float().numpy()
-
-        # Preprocess
-        if preprocess == 'standardize':
-            Xhat = PREPROCESS[preprocess](Xhat, model.mu, model.sigma)
-        else:
-            Xhat = PREPROCESS[preprocess](Xhat)
-
+        Xhat = _preprocess(model, X, preprocess)
         Xhat = torch.tensor(Xhat).float()
 
-        Xhat = model(Xhat.to(model.device), X_lens).detach().cpu().numpy() + EPS
+        Xhat = model(Xhat.to(model.device), X_lens).detach().cpu().numpy() + \
+            EPS
         X = X.numpy()
 
         # Reshape
@@ -136,18 +123,11 @@ def recurrent_deviance_threshold(model, data_loader, far, preprocess):
         Xhat = np.vstack([Xhat[idx][:X_lens[idx]] for idx in range(len(Xhat))])
 
         # Inverse preprocessing
-        if preprocess == 'standardize':
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat, model.mu, model.sigma)
-        elif preprocess in ['normalize', 'normlog']:
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat, X)
-        else:
-            Xhat = INVERSE_PREPROCESS[preprocess](Xhat)
-
-        # Floor everything at 0
+        Xhat = _inv_preprocess(model, X, Xhat, preprocess)
         Xhat = np.maximum(Xhat, EPS)
 
         # Compute deviance
-        dev = pg.deviance(X, Xhat)
+        dev = get_deviance(X, Xhat)
         deviance.append(dev)
 
     deviance = np.hstack(deviance)

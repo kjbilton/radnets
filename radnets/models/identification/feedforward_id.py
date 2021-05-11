@@ -1,10 +1,9 @@
 import torch
-from torch import nn
 from torch import optim
-import torch.nn.functional as F
 
 from radnets.training.early_stopping import EarlyStopping
 from .base_id import BaseModel
+
 
 class FeedForwardID(BaseModel):
     """
@@ -15,10 +14,8 @@ class FeedForwardID(BaseModel):
         self.front_end = self._build_front_end(params)
         self.rear_end = self._build_rear_end(params)
 
-    ####################################################################
-    # High-level functions
-    ####################################################################
-    def train_and_validate(self, loaders, optimizer, name=None, scheduler=None):
+    def train_and_validate(self, loaders, optimizer, name=None,
+                           scheduler=None):
         """
         loaders : dict, keys = ['training', 'validation']
             Dictorary of DataLoaders for training and validation data.
@@ -37,7 +34,7 @@ class FeedForwardID(BaseModel):
             msg = f'Epoch {str(epoch).zfill(3)}. '
 
             # Switch between training and validation
-            for mode in ['training' ,'validation']:
+            for mode in ['training', 'validation']:
 
                 if mode == 'training':
                     self.train()

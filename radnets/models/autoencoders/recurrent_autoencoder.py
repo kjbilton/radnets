@@ -2,8 +2,10 @@ import torch
 from torch import nn
 from torch import optim
 
+
 from .base_autoencoder import BaseAutoencoder
 from radnets.models.tools.constants import recurrent_layers
+
 
 class RecurrentAutoencoder(BaseAutoencoder):
     def __init__(self, params):
@@ -15,7 +17,8 @@ class RecurrentAutoencoder(BaseAutoencoder):
     ####################################################################
     # High-level methods
     ####################################################################
-    def train_and_validate(self, loaders, optimizer, name=None, scheduler=None):
+    def train_and_validate(self, loaders, optimizer, name=None,
+                           scheduler=None):
         """
         loaders : dict, keys = ['training', 'validation']
             Dictorary of DataLoaders for training and validation data.
@@ -35,7 +38,7 @@ class RecurrentAutoencoder(BaseAutoencoder):
             msg = f'Epoch {str(epoch).zfill(3)}. '
 
             # Switch between training and validation
-            for mode in ['training' ,'validation']:
+            for mode in ['training', 'validation']:
 
                 if mode == 'training':
                     self.train()
@@ -57,7 +60,7 @@ class RecurrentAutoencoder(BaseAutoencoder):
 
                     # Unpad
                     X = torch.cat([X[idx][:X_lens[idx]]
-                                     for idx in range(len(X))])
+                                  for idx in range(len(X))])
                     Xhat = torch.cat([Xhat[idx][:X_lens[idx]]
                                      for idx in range(len(Xhat))])
 
@@ -163,14 +166,13 @@ class RecurrentAutoencoder(BaseAutoencoder):
         input_size = self.input_sizes[-1]
 
         if rnn_type == 'rnn':
-            l = recurrent_layers[rnn_type](input_size, n_nodes_out,
-                                           bias=params['bias'],
-                                           num_layers=params['num_layers'],
-                                           nonlinearity=activation)
+            _layer = recurrent_layers[rnn_type](
+                input_size, n_nodes_out, bias=params['bias'],
+                num_layers=params['num_layers'], nonlinearity=activation)
         else:
-            l = recurrent_layers[rnn_type](input_size, n_nodes_out,
-                                           num_layers=params['num_layers'],
-                                           bias=params['bias'])
+            _layer = recurrent_layers[rnn_type](
+                input_size, n_nodes_out, num_layers=params['num_layers'],
+                bias=params['bias'])
 
         self.input_sizes.append(n_nodes_out)
 
@@ -178,4 +180,4 @@ class RecurrentAutoencoder(BaseAutoencoder):
         self.ndof = n_nodes_out
         self.feature_size_min = n_nodes_out
 
-        return l
+        return _layer

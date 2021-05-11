@@ -1,5 +1,6 @@
 import yaml
 
+
 def load_config(filename):
     """
     Load a `radnets` YAML config file.
@@ -18,9 +19,11 @@ def load_config(filename):
         config = yaml.load(infile, Loader=yaml.FullLoader)
     return config
 
+
 def get_filename(config, path):
     """
-    Get the filename corresponding to a given `path` in the dictionary `config`.
+    Get the filename corresponding to a given `path` in the dictionary
+    `config`.
 
     Parameters
     ----------

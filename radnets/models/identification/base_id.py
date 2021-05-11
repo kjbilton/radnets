@@ -6,7 +6,9 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+
 from radnets.models.tools.constants import activations
+
 
 class BaseModel(nn.Module):
     def __init__(self, params):
@@ -14,7 +16,7 @@ class BaseModel(nn.Module):
 
         self.params = params
         self.device = torch.device('cuda' if params['device'] == 'gpu'
-                                    else 'cpu')
+                                   else 'cpu')
 
         self.n_bins = params['spectral']['n_bins']
         self.preprocess = self.params['training']['preprocess']
@@ -35,8 +37,8 @@ class BaseModel(nn.Module):
             self.loss = self.mse_loss
 
         # Determine if it's a convnet
-        _l = [l['layer_type'] == 'convolutional'
-              for l in params['architecture']['front_end']]
+        _l = [_layer['layer_type'] == 'convolutional'
+              for _layer in params['architecture']['front_end']]
         self.convnet = True if any(_l) else False
 
         # Determine if it's a fully-convolutional network
@@ -51,36 +53,33 @@ class BaseModel(nn.Module):
         for param in list(self.parameters()):
             num = 1
             for param_size in list(param.size()):
-                num *=  param_size
+                num *= param_size
             n_params += num
 
         return n_params
 
     def kl_loss(self, Yhat, Y):
         Yhat = F.softmax(Yhat, dim=1)
-        l = F.kl_div(Yhat, Y, reduction='sum')
-        return l
+        _layer = F.kl_div(Yhat, Y, reduction='sum')
+        return _layer
 
     def ce_loss(self, Yhat, Y):
         """
-        Loss used when the output is the fraction of spectrum associated with each source type.
+        Loss used when the output is the fraction of spectrum associated with
+        each source type.
         """
         Yhat = F.softmax(Yhat, dim=1)
-        # l =  F.binary_cross_entropy(Yhat, Y, weight=self.weight,
-        #                             reduction='sum')
-
-        l =  F.binary_cross_entropy(Yhat, Y, reduction='sum')
-        return l
-
+        _layer = F.binary_cross_entropy(Yhat, Y, reduction='sum')
+        return _layer
 
     def mse_loss(self, Yhat, Y):
         """
-        Loss used when the output is the fraction of spectrum associated with each source type.
+        Loss used when the output is the fraction of spectrum associated with
+        each source type.
         """
         Yhat = F.softmax(Yhat, dim=1)
-        l =  F.mse_loss(Yhat, Y, reduction='sum')
-        return l
-
+        _layer = F.mse_loss(Yhat, Y, reduction='sum')
+        return _layer
 
     def _build_front_end(self, params):
         """
@@ -98,8 +97,8 @@ class BaseModel(nn.Module):
 
             if type == 'dense':
                 n_nodes_out = layer['n_nodes_out']
-                l = nn.Linear(input_sizes[idx], n_nodes_out, bias)
-                modules.append(l)
+                _layer = nn.Linear(input_sizes[idx], n_nodes_out, bias)
+                modules.append(_layer)
 
                 n_features = n_nodes_out
                 input_channels.append(1)
@@ -138,7 +137,7 @@ class BaseModel(nn.Module):
             # Add batchnorm
             if 'batchnorm' in layer.keys():
                 if layer['batchnorm']:
-                    if  type == 'dense':
+                    if type == 'dense':
                         bn_size = layer['n_nodes_out']
                     else:
                         bn_size = layer['n_kernels_out']
@@ -173,11 +172,10 @@ class BaseModel(nn.Module):
         modules = []
 
         for idx, layer in enumerate(arch_params):
-
             n_nodes_out = layer['n_nodes_out']
-            l = nn.Linear(input_sizes[idx], n_nodes_out, layer['bias'])
+            _layer = nn.Linear(input_sizes[idx], n_nodes_out, layer['bias'])
             input_sizes.append(n_nodes_out)
-            modules.append(l)
+            modules.append(_layer)
 
             # Add the activation function
             if 'activation' in layer.keys():

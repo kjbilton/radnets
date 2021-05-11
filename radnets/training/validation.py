@@ -1,6 +1,7 @@
 import numpy as np
 import torch.nn.functional as F
 
+
 def predict_regression(model, thresholds, data_loader):
     """
     Returns
@@ -11,7 +12,7 @@ def predict_regression(model, thresholds, data_loader):
     # Containers for output
     predictions = []
     labels = []
-    
+
     for X, y in data_loader:
 
         # Run inference
@@ -38,6 +39,7 @@ def predict_regression(model, thresholds, data_loader):
     labels = np.hstack(labels)
     return predictions, labels
 
+
 def predict_single_label(model, data_loader):
     """
     Returns
@@ -48,7 +50,7 @@ def predict_single_label(model, data_loader):
     # Containers for output
     predictions = []
     labels = []
-    
+
     for X, y in data_loader:
 
         # Run inference
@@ -67,12 +69,14 @@ def predict_single_label(model, data_loader):
     labels = np.array(labels).flatten()
     return predictions, labels
 
-def generate_regression_confusion_matrix(model, thresholds, data_loader, normed=False):
+
+def generate_regression_confusion_matrix(model, thresholds, data_loader,
+                                         normed=False):
     """
     Predict data and produce a confusion matrix.
     """
     from sklearn.metrics import confusion_matrix
-    
+
     predictions, labels = predict_regression(model, thresholds, data_loader)
 
     cm = confusion_matrix(labels, predictions)
@@ -80,12 +84,13 @@ def generate_regression_confusion_matrix(model, thresholds, data_loader, normed=
         cm = cm / cm.sum(axis=1)[:, None]
     return cm
 
+
 def generate_single_label_confusion_matrix(model, data_loader, normed=False):
     """
     Predict data and produce a confusion matrix.
     """
     from sklearn.metrics import confusion_matrix
-    
+
     predictions, labels = predict_single_label(model, data_loader)
 
     cm = confusion_matrix(labels, predictions)

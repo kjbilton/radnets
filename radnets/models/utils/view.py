@@ -1,5 +1,6 @@
 from torch import nn
 
+
 class View(nn.Module):
     def __init__(self, shape):
         super(View, self).__init__()

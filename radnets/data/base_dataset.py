@@ -2,11 +2,12 @@ from functools import partial
 from torch.utils.data import Dataset
 
 from .preprocess import (log_preprocess, norm_log_preprocess,
-                         standardize_preprocess, EPS)
+                         standardize_preprocess)
 PREPROCESS_FUNCTIONS = {'none': lambda x: x, 'log': log_preprocess,
                         'normlog': norm_log_preprocess,
                         'standardize': standardize_preprocess,
                         'mean_center': standardize_preprocess}
+
 
 class BaseDataset(Dataset):
     def __init__(self, spectra, indices, preprocess=None, labels=None):
@@ -22,7 +23,8 @@ class BaseDataset(Dataset):
                            'mean_center')
             Type of preprocessing to perform on spectra.
         """
-        assert preprocess in PREPROCESS_FUNCTIONS, "Invalid preprocessing type."
+        assert preprocess in PREPROCESS_FUNCTIONS,\
+            "Invalid preprocessing type."
 
         self.spectra = spectra
         self.indices = indices

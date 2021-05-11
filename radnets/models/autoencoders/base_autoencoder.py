@@ -9,6 +9,7 @@ from radnets.models.tools.view import View
 from radnets.models.tools.constants import activations
 from radnets.training.early_stopping import EarlyStopping
 
+
 class BaseAutoencoder(nn.Module):
     def __init__(self, params):
         super().__init__()
@@ -36,8 +37,8 @@ class BaseAutoencoder(nn.Module):
             self.loss = self.mse_loss
 
         # Determine if it's a convnet
-        _l = [l['layer_type'] == 'convolutional'
-              for v in params['architecture'].values() for l in v]
+        _l = [_layer['layer_type'] == 'convolutional'
+              for v in params['architecture'].values() for _layer in v]
         self.convnet = True if any(_l) else False
 
         # Determine if it's a fully-convolutional network
@@ -67,7 +68,7 @@ class BaseAutoencoder(nn.Module):
         """
         Decode spectra.
         """
-        # Squeeze to convert shape (n_samples, 1, n_bins) to (n_samples, n_bins)
+        # Squeeze to convert shape (n_samples,1,n_bins) to (n_samples,n_bins)
         return self.decoder(X).squeeze()
 
     def get_n_params(self):
@@ -107,14 +108,15 @@ class BaseAutoencoder(nn.Module):
             # Determine if data needs to be flattened (conv -> dense)
             if idx > 0:
                 if (encoder_params[idx - 1]['layer_type'] == 'convolutional') \
-                    and (layer['layer_type'] == 'dense'):
-                        modules.append(nn.Flatten())
+                  and (layer['layer_type'] == 'dense'):
+                    modules.append(nn.Flatten())
 
             # Add dense layer
             if layer['layer_type'] == 'dense':
                 n_nodes_out = layer['n_nodes_out']
-                l = nn.Linear(input_sizes[idx], n_nodes_out, layer['bias'])
-                modules.append(l)
+                _layer = nn.Linear(input_sizes[idx], n_nodes_out,
+                                   layer['bias'])
+                modules.append(_layer)
                 # Update the current number of features
                 n_features = n_nodes_out
 
@@ -192,17 +194,17 @@ class BaseAutoencoder(nn.Module):
             if layer['layer_type'] == 'dense':
                 # Output size = input size to next layer
                 if idx != len(decoder_params) - 1:
-                    if decoder_params[idx+1]['layer_type'] == 'dense':
+                    _next_layer_type = decoder_params[idx+1]['layer_type']
+                    if _next_layer_type == 'dense':
                         output_size = decoder_params[idx+1]['n_nodes_in']
-                    elif decoder_params[idx+1]['layer_type'] == 'convolutional':
-                        # output_size = decoder_params[idx+1]['n_kernels_in']
+                    elif _next_layer_type == 'convolutional':
                         n_features = self.input_sizes[::-1][idx+1]
-                        # output_size *= n_features
                         output_size = n_features
                 else:
                     output_size = params['spectral']['n_bins']
-                l = nn.Linear(layer['n_nodes_in'], output_size, layer['bias'])
-                modules.append(l)
+                _layer = nn.Linear(layer['n_nodes_in'], output_size,
+                                   layer['bias'])
+                modules.append(_layer)
 
                 # Reshape into shape needed for deconvolution
                 if idx != len(decoder_params) - 1:
@@ -273,7 +275,7 @@ class BaseAutoencoder(nn.Module):
         # Add sparsity regularization
         if self.l1_lambda > 0.:
             for param in self.parameters():
-               _loss += self.l1_lambda * torch.norm(param, p=1)
+                _loss += self.l1_lambda * torch.norm(param, p=1)
         return _loss
 
     def poisson_log_loss(self, Xhat, X, complete=True, eps=1.E-7):
@@ -299,5 +301,5 @@ class BaseAutoencoder(nn.Module):
         # Add sparsity regularization
         if self.l1_lambda > 0.:
             for param in self.parameters():
-               _loss += self.l1_lambda * torch.norm(param, p=1)
+                _loss += self.l1_lambda * torch.norm(param, p=1)
         return _loss

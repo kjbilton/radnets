@@ -6,7 +6,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-from .tools import _preprocess, _inv_preprocess
+
+from .tools import _preprocess
+
 
 def feedforward_regression_id(model, X, preprocess):
     """
@@ -26,6 +28,7 @@ def feedforward_regression_id(model, X, preprocess):
     alarm_mask = (outputs_norm > 1).any(axis=1)
     predictions[alarm_mask] = outputs_norm[alarm_mask].argmax(axis=1) + 1
     return predictions
+
 
 def recurrent_regression_id(model, X, preprocess):
     """
@@ -48,6 +51,7 @@ def recurrent_regression_id(model, X, preprocess):
     predictions[alarm_mask] = outputs_norm[alarm_mask].argmax(axis=1) + 1
     return predictions
 
+
 def compute_id_thresholds(model, data_loader, far):
     """
     Computes a threshold for each source individually.
@@ -66,6 +70,7 @@ def compute_id_thresholds(model, data_loader, far):
     n_fa = int(len(predictions_sorted) * far / (y.shape[1] - 1))
     thresh = predictions_sorted[n_fa]
     return thresh, predictions
+
 
 def recurrent_id_threshold(model, data_loader, far):
     """

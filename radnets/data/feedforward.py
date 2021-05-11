@@ -1,4 +1,8 @@
+import numpy as np
+
+
 from .base_dataset import BaseDataset
+
 
 class FeedforwardDataset(BaseDataset):
     def _compute_mean_variance(self, spectra, labels):
@@ -11,12 +15,12 @@ class FeedforwardDataset(BaseDataset):
 
         if self.preprocess == 'standardize':
             self.sigma = background.std(axis=0, ddof=1).values
-        elif preprocess == 'mean_center':
+        elif self.preprocess == 'mean_center':
             self.sigma = np.ones_like(self.mu)
 
     def __getitem__(self, idx):
         X = self.spectra[idx]
-        X  = self.preprocess_function(X)
+        X = self.preprocess_function(X)
 
         if self.labels is not None:
             y = self.labels[idx]
