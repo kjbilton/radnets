@@ -1,8 +1,6 @@
 import torch
 from torch import optim
-
-
-from radnets.detection.thresholds import feedforward_deviance_threshold
+from radnets.detection.detect import feedforward_deviance_threshold
 from .base_autoencoder import BaseAutoencoder
 
 

@@ -4,9 +4,8 @@ from torch import optim
 
 from .base_id import BaseModel
 from ...training.early_stopping import EarlyStopping
-from radnets.detection.thresholds import recurrent_id_threshold
-
-RECURRENT_LAYERS = {'rnn': nn.RNN, 'lstm': nn.LSTM, 'gru': nn.GRU}
+from radnets.detection.identify import recurrent_id_threshold
+from radnets.models.utils.constants import activations
 
 
 class RecurrentID(BaseModel):

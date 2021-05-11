@@ -4,9 +4,8 @@ Base class for all autoencoder models.
 import torch
 import torch.nn.functional as F
 from torch import nn
-
-from radnets.models.tools.view import View
-from radnets.models.tools.constants import activations
+from radnets.models.utils.view import View
+from radnets.models.utils.constants import activations
 from radnets.training.early_stopping import EarlyStopping
 
 
@@ -39,10 +38,10 @@ class BaseAutoencoder(nn.Module):
         # Determine if it's a convnet
         _l = [_layer['layer_type'] == 'convolutional'
               for v in params['architecture'].values() for _layer in v]
-        self.convnet = True if any(_l) else False
+        self.convnet = any(_l)
 
         # Determine if it's a fully-convolutional network
-        self.fcn = True if all(_l) else False
+        self.fcn = all(_l)
 
         # Build encoder and decoder modules
         assert all([x in params['architecture']

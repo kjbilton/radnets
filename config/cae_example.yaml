@@ -1,0 +1,72 @@
+spectral :
+    n_bins : 128
+
+architecture :
+    encoder :
+        - layer_type    : convolutional
+          n_kernels_out : 8
+          kernel_size   : 5
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+
+        - layer_type    : convolutional
+          n_kernels_out : 16
+          kernel_size   : 3
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+
+        - layer_type    : convolutional
+          n_kernels_out : 32
+          kernel_size   : 3
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+
+        - layer_type    : dense
+          n_nodes_out   : 4
+          activation    : relu
+          bias          : true
+
+    decoder :
+        - layer_type    : dense
+          n_nodes_in    : 4
+          activation    : relu
+          bias          : true
+
+        - layer_type    : convolutional
+          n_kernels_in : 32
+          activation   : relu
+          bias         : true
+          pool_size    : 2
+
+        - layer_type    : convolutional
+          n_kernels_in : 16
+          activation   : relu
+          bias         : true
+          pool_size    : 2
+
+        - layer_type    : convolutional
+          n_kernels_in : 8
+          bias         : true
+          pool_size    : 2
+
+training :
+    preprocess : 'none'
+    loss       : 'poisson'
+    lr         : 0.001
+    batch_size : 512
+    n_epochs   : 100
+    l1_lambda  : 0.00
+    l2_lambda  : 0.1
+    seed       : 0
+    name       : cae_2
+    file       : cae_2.pt
+    path       : .
+    early_stopping :
+        patience   : 10
+        delta : 0.
+
+# device : cuda:1
+device : cpu

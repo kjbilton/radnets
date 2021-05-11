@@ -5,9 +5,7 @@ Base class for identification pytorch models.
 import torch
 from torch import nn
 import torch.nn.functional as F
-
-
-from radnets.models.tools.constants import activations
+from radnets.models.utils.constants import activations
 
 
 class BaseModel(nn.Module):
@@ -39,10 +37,10 @@ class BaseModel(nn.Module):
         # Determine if it's a convnet
         _l = [_layer['layer_type'] == 'convolutional'
               for _layer in params['architecture']['front_end']]
-        self.convnet = True if any(_l) else False
+        self.convnet = any(_l)
 
         # Determine if it's a fully-convolutional network
-        self.fcn = True if all(_l) else False
+        self.fcn = all(_l)
 
     def get_n_params(self):
         """

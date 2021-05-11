@@ -10,7 +10,6 @@ class FeedForwardID(BaseModel):
     """
     def __init__(self, params):
         super().__init__(params)
-
         self.front_end = self._build_front_end(params)
         self.rear_end = self._build_rear_end(params)
 

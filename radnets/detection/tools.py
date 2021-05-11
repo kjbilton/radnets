@@ -1,6 +1,5 @@
 from scipy.special import xlogy, gammaln
-
-
+from radnets.utils.constants import EPS
 from ..data.preprocess import PREPROCESS, INVERSE_PREPROCESS
 
 
@@ -31,7 +30,7 @@ def compute_aic(Xhat, X, n_params):
     return 2 * n_params + 2 * loss.sum()
 
 
-def poisson_nll(Xhat, X, complete=True, eps=1e-7):
+def poisson_nll(Xhat, X, complete=True, eps=EPS):
     """
     Poisson negative log-likelihood
     """
@@ -40,3 +39,10 @@ def poisson_nll(Xhat, X, complete=True, eps=1e-7):
     if complete:
         loss += gammaln(X + 1)
     return loss
+
+
+def get_deviance(X, Xhat, eps=EPS):
+    """
+    Poisson deviance.
+    """
+    return 2 * (Xhat - X + xlogy(X, X/(Xhat + EPS))).sum()
