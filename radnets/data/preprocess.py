@@ -73,11 +73,13 @@ def inv_norm_log_preprocess(Xprime, X):
 
 PREPROCESS = {'none': lambda x: x,
               'standardize': standardize_preprocess,
+              'mean_center': standardize_preprocess,
               'log': log_preprocess,
               'normlog': norm_log_preprocess}
 
 
 INVERSE_PREPROCESS = {'none': lambda x: x,
                       'standardize': inv_standardize_preprocess,
+                      'mean_center': inv_standardize_preprocess,
                       'log': inv_log_preprocess,
                       'normlog': inv_norm_log_preprocess}
