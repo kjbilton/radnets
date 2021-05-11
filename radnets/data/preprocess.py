@@ -1,6 +1,7 @@
 import numpy as np
 from radnets.utils.constants import EPS
 
+
 def standardize_preprocess(X, mu, sigma):
     """
     Standardize the input data `X` by mean subtraction and scaling by the

@@ -13,10 +13,9 @@ def data():
 
 def test_init(data):
     model = data['model']
-    config = data['config']
-
     assert isinstance(model.encoder, nn.Sequential)
     assert isinstance(model.decoder, nn.Sequential)
+
 
 def test_architecture(data):
     model = data['model']

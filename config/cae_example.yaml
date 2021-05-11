@@ -68,5 +68,4 @@ training :
         patience   : 10
         delta : 0.
 
-# device : cuda:1
 device : cpu

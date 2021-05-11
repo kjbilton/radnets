@@ -5,7 +5,7 @@ from torch import optim
 from .base_id import BaseModel
 from ...training.early_stopping import EarlyStopping
 from radnets.detection.identify import recurrent_id_threshold
-from radnets.models.utils.constants import activations
+from radnets.models.utils.constants import recurrent_layers
 
 
 class RecurrentID(BaseModel):
@@ -169,17 +169,17 @@ class RecurrentID(BaseModel):
         params = params['architecture']['recurrent'][0]
         rnn_type = params['rnn_type']
         activation = params['activation']
-        assert rnn_type in RECURRENT_LAYERS
+        assert rnn_type in recurrent_layers
 
         n_nodes_out = params['n_nodes_out']
         input_size = self.input_sizes[-1]
 
         if rnn_type == 'rnn':
-            _layer = RECURRENT_LAYERS[rnn_type](
+            _layer = recurrent_layers[rnn_type](
                 input_size, n_nodes_out, bias=params['bias'],
                 num_layers=params['num_layers'], nonlinearity=activation)
         else:
-            _layer = RECURRENT_LAYERS[rnn_type](
+            _layer = recurrent_layers[rnn_type](
                 input_size, n_nodes_out, num_layers=params['num_layers'],
                 bias=params['bias'])
 

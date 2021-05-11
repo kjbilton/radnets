@@ -1,0 +1,61 @@
+spectral :
+    n_bins : 128
+
+architecture :
+    front_end :
+        - layer_type    : convolutional
+          n_kernels_out : 16
+          kernel_size   : 3
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+          batchnorm     : true
+
+        - layer_type    : convolutional
+          n_kernels_out : 32
+          kernel_size   : 3
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+          batchnorm     : true
+
+        - layer_type    : convolutional
+          n_kernels_out : 64
+          kernel_size   : 3
+          pool_size     : 2
+          activation    : relu
+          bias          : true
+          batchnorm     : true
+          dropout       : 0.5
+
+    rear_end :
+        - layer_type    : dense
+          n_nodes_out   : 64
+          activation    : relu
+          bias          : true
+          batchnorm     : true
+          dropout       : 0.5
+
+        - layer_type    : dense
+          n_nodes_out   : 18
+          bias          : true
+
+    output : softmax
+
+training :
+    loss : 'ce'
+    preprocess : 'standardize'
+    batch_size : 256
+    bkg_weight : 1
+    n_epochs   : 100
+    l1_lambda  : 0.
+    l2_lambda  : 1
+    seed       : 0
+    name       : id
+    file       : id_test.pt
+    path       : .
+    early_stopping :
+        patience   : 10
+        delta : 0.0000
+
+device : cpu
