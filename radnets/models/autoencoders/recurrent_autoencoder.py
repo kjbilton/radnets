@@ -1,7 +1,11 @@
+import numpy as np
 import torch
 from torch import nn
 from torch import optim
 from .base_autoencoder import BaseAutoencoder
+from ...data.preprocess import _preprocess, _inv_preprocess
+from ...utils.constants import EPS
+from ...detection.tools import compute_deviance
 from ...utils.constants import recurrent_layers
 
 
@@ -145,6 +149,63 @@ class RecurrentAutoencoder(BaseAutoencoder):
         # Reshape for turning back into runs
         X = X.view(batch_size, run_len, -1)
         return X
+
+    def detect(self, X):
+        # Prepare spectra for model
+        Xhat = _preprocess(self, X, self.preprocess)
+        Xhat = torch.tensor(Xhat).float().to(self.device)
+        Xhat = Xhat.unsqueeze(0)
+        X_lens = [Xhat.shape[1]]
+
+        # Perform inference
+        Xhat = self.forward(Xhat, X_lens).detach().cpu().squeeze().numpy()
+        X = X.astype(float)
+
+        # Inverse preprocessing
+        Xhat = _inv_preprocess(self, X, Xhat, self.preprocess)
+        Xhat = np.maximum(Xhat, EPS)
+
+        # Perform detection
+        deviance = compute_deviance(X, Xhat)
+        return int(any(deviance > self.threshold))
+
+    def recurrent_deviance_threshold(self, data_loader, far):
+        """
+        Computes threshold for recurrent deviance-based models
+        """
+        data_loader.dataset.preprocess = 'none'
+
+        deviance = []
+
+        for X, X_lens in data_loader:
+            # Prepare spectra for model
+            Xhat = X.float().numpy()
+            Xhat = _preprocess(self, X, self.preprocess)
+            Xhat = torch.tensor(Xhat).float()
+
+            Xhat = self.forward(Xhat.to(self.device), X_lens)
+            Xhat = Xhat.detach().cpu().numpy() + EPS
+            X = X.numpy()
+
+            # Reshape
+            X = np.vstack([X[idx][:X_lens[idx]] for idx in range(len(X))])
+            Xhat = np.vstack([Xhat[idx][:X_lens[idx]]
+                              for idx in range(len(Xhat))])
+
+            # Inverse preprocessing
+            Xhat = _inv_preprocess(self, X, Xhat, self.preprocess)
+            Xhat = np.maximum(Xhat, EPS)
+
+            # Compute deviance
+            dev = compute_deviance(X, Xhat)
+            deviance.append(dev)
+
+        deviance = np.hstack(deviance)
+
+        n_fa = np.floor(len(deviance) * far).astype(int)
+        deviance_sorted = np.sort(deviance)[::-1]
+        thresh = deviance_sorted[n_fa]
+        return thresh, deviance
 
     def _build_recurrent(self, params):
         params = params['architecture']['recurrent'][0]
