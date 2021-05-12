@@ -16,8 +16,6 @@ This project uses `pytorch` for both spectral anomaly detection and identificati
 ## Structure
 - `radnets.data`
   - Tools for preprocessing data and custom `pytorch` `Datasets` and `Dataloaders` used in training models.
-- `radnets.detection`
-  - Tools for computing detection thresholds and performing detection.
 - `radnets.models`
   - `pytorch` model classes for detection and identification. A distinction is made betweeen feedforward and recurrent models since they require a different treatment of data.
 - `radnets.training`
