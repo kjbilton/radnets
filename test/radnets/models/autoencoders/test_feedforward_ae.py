@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import torch
 from torch import nn
 from radnets.models import FeedforwardAutoencoder
 from radnets.utils.config import load_config
@@ -32,3 +33,43 @@ def test_load_weights(data):
     default_parameters = model.parameters()
     model.load_weights()
     assert model.parameters() != default_parameters
+
+
+def test_encode(data):
+    model = data['model']
+    model.load_weights()
+    config = data['config']
+    n_spectra = 1
+    latent_dimension = config['architecture']['encoder'][-1]['n_nodes_out']
+    n_bins = 128
+    x = torch.ones((n_spectra, n_bins))
+    encoding = model.encode(x)
+    assert encoding.shape == (1, latent_dimension)
+
+
+def test_decode(data):
+    model = data['model']
+    model.load_weights()
+    config = data['config']
+    n_spectra = 1
+    latent_dimension = config['architecture']['encoder'][-1]['n_nodes_out']
+    n_bins = 128
+    encoding = torch.ones((n_spectra, latent_dimension))
+    reconstruction = model.decode(encoding)
+    assert reconstruction.shape[0] == n_bins
+
+
+def test_detect(data):
+    model = data['model']
+    model.load_weights()
+
+    n_bins = 128
+    x = np.ones((1, n_bins))
+    mu = np.ones(n_bins)
+    sigma = np.ones(n_bins)
+    model.mu = mu
+    model.sigma = sigma
+    model.threshold = 0
+
+    detection = model.detect(x)
+    assert detection

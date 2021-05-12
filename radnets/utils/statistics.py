@@ -27,4 +27,4 @@ def compute_deviance(X, Xhat, eps=EPS):
     """
     Poisson deviance.
     """
-    return 2 * (Xhat - X + xlogy(X, X/(Xhat + EPS))).sum()
+    return 2 * (Xhat - X + xlogy(X, X/(Xhat + EPS))).sum(axis=1)
