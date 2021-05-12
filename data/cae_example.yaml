@@ -17,29 +17,16 @@ architecture :
           activation    : relu
           bias          : true
 
-        - layer_type    : convolutional
-          n_kernels_out : 32
-          kernel_size   : 3
-          pool_size     : 2
-          activation    : relu
-          bias          : true
-
         - layer_type    : dense
-          n_nodes_out   : 4
+          n_nodes_out   : 8
           activation    : relu
           bias          : true
 
     decoder :
         - layer_type    : dense
-          n_nodes_in    : 4
+          n_nodes_in    : 8
           activation    : relu
           bias          : true
-
-        - layer_type    : convolutional
-          n_kernels_in : 32
-          activation   : relu
-          bias         : true
-          pool_size    : 2
 
         - layer_type    : convolutional
           n_kernels_in : 16
@@ -53,19 +40,19 @@ architecture :
           pool_size    : 2
 
 training :
-    preprocess : 'none'
     loss       : 'poisson'
+    preprocess : 'standardize'
     lr         : 0.001
     batch_size : 512
     n_epochs   : 100
     l1_lambda  : 0.00
-    l2_lambda  : 0.1
+    l2_lambda  : 0.5
     seed       : 0
-    name       : cae_2
-    file       : cae_2.pt
-    path       : .
+    name       : cae_example
+    file       : cae_example.pt
+    path       : data
     early_stopping :
         patience   : 10
-        delta : 0.
+        delta : 0.0000
 
 device : cpu

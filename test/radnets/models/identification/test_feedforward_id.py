@@ -6,7 +6,7 @@ from radnets.utils.config import load_config
 
 @pytest.fixture
 def data():
-    config = load_config('config/id_example.yaml')
+    config = load_config('data/id_example.yaml')
     model = FeedForwardID(config)
     return {'model': model, 'config': config}
 

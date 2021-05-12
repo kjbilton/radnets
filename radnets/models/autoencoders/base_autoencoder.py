@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torch import nn
 
 from ..utils.view import View
+from ...utils.config import get_filename
 from ...utils.constants import activations
 from ...training.early_stopping import EarlyStopping
 
@@ -49,6 +50,11 @@ class BaseAutoencoder(nn.Module):
                     for x in ['encoder', 'decoder']])
         self.encoder = self.build_encoder(params)
         self.decoder = self.build_decoder(params)
+
+    def load_weights(self):
+        weights_path = get_filename(self.params, 'training')
+        weights = torch.load(weights_path, map_location=self.device)
+        self.load_state_dict(weights)
 
     def encode(self, X):
         """
