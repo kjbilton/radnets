@@ -1,6 +1,9 @@
+import numpy as np
 import torch
 from torch import optim
-from ...detection.detect import feedforward_deviance_threshold
+from ...data.preprocess import _preprocess, _inv_preprocess
+from ...utils.constants import EPS
+from ...detection.tools import compute_deviance
 from .base_autoencoder import BaseAutoencoder
 
 
@@ -89,10 +92,69 @@ class FeedforwardAutoencoder(BaseAutoencoder):
         X = self.decode(X)
         return X
 
+    def detect(self, X):
+        # Prepare data for inference
+        Xhat = _preprocess(self, X, self.preprocess)
+        Xhat = torch.tensor(Xhat).float().to(self.device)
+
+        # Predict reconstruction
+        Xhat = self.forward(Xhat).detach().cpu().numpy() + EPS
+
+        # Inverse preprocessing
+        X = X.astype(float) + EPS
+        Xhat = _inv_preprocess(self, X, Xhat, self.preprocess)
+        Xhat = np.maximum(Xhat, EPS)
+
+        # Perform detection
+        deviance = compute_deviance(X, Xhat)
+        return int(any(deviance > self.threshold))
+
     def compute_threshold(self, data_loader, far):
+        """
+        Compute detection threshold.
+
+        Parameters
+        ----------
+        data_loader
+            pytorch data loader containing background data to evaluate on.
+        far : float
+            False alarm rate in units of inverse seconds.
+
+        Returns
+        -------
+        threshold : float
+        deviance : numpy array
+        """
         data_loader.dataset.preprocess = 'none'
-        thresh, metrics = feedforward_deviance_threshold(self, data_loader,
-                                                         far, self.preprocess)
+
+        deviance = []
+
+        for X in data_loader:
+            # Prepare spectra for model
+            Xhat = X.float().numpy()
+            Xhat = _preprocess(self, X, self.preprocess)
+            Xhat = torch.tensor(Xhat).float().to(self.device)
+
+            # Run inference
+            Xhat = self.forward(Xhat)
+            Xhat = Xhat.detach().cpu().numpy() + EPS
+            X = X.numpy() + EPS
+
+            # Inverse preprocessing
+            Xhat = _inv_preprocess(self, X, Xhat, self.preprocess)
+            Xhat = np.maximum(Xhat, EPS)
+
+            # Compute p-values for Poisson deviance
+            _deviance = compute_deviance(X, Xhat)
+            deviance.append(_deviance)
+
+        deviance = np.hstack(deviance)
+
+        # Compute threshold
+        n_fa = np.floor(len(deviance) * far).astype(int)
+        deviance_sorted = np.sort(deviance)[::-1]
+        thresh = deviance_sorted[n_fa]
+
         data_loader.dataset.preprocess = self.preprocess
         self.threshold = thresh
-        return metrics
+        return deviance

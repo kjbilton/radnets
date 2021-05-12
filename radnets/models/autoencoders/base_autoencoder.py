@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from ..utils.view import View
-from ..utils.constants import activations
+from ...utils.constants import activations
 from ...training.early_stopping import EarlyStopping
 
 

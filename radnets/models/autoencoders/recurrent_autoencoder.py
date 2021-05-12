@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from torch import optim
 from .base_autoencoder import BaseAutoencoder
-from ..utils.constants import recurrent_layers
+from ...utils.constants import recurrent_layers
 
 
 class RecurrentAutoencoder(BaseAutoencoder):

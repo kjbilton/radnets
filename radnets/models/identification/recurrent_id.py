@@ -5,7 +5,7 @@ from torch import optim
 from .base_id import BaseModel
 from ...training.early_stopping import EarlyStopping
 from ...detection.identify import recurrent_id_threshold
-from ..utils.constants import recurrent_layers
+from ...utils.constants import recurrent_layers
 
 
 class RecurrentID(BaseModel):
