@@ -23,7 +23,7 @@ def poisson_nll(Xhat, X, complete=True, eps=EPS):
     return loss
 
 
-def compute_deviance(X, Xhat, eps=EPS):
+def compute_deviance(Xhat, X, eps=EPS):
     """
     Poisson deviance.
     """

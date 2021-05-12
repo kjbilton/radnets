@@ -107,7 +107,7 @@ class FeedforwardAutoencoder(BaseAutoencoder):
         Xhat = np.maximum(Xhat, EPS)
 
         # Perform detection
-        deviance = compute_deviance(X, Xhat)
+        deviance = compute_deviance(Xhat, X)
         return int(any(deviance > self.threshold))
 
     def compute_threshold(self, data_loader, far):
@@ -146,7 +146,7 @@ class FeedforwardAutoencoder(BaseAutoencoder):
             Xhat = np.maximum(Xhat, EPS)
 
             # Compute p-values for Poisson deviance
-            _deviance = compute_deviance(X, Xhat)
+            _deviance = compute_deviance(Xhat, X)
             deviance.append(_deviance)
 
         deviance = np.hstack(deviance)

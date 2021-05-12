@@ -166,7 +166,7 @@ class RecurrentAutoencoder(BaseAutoencoder):
         Xhat = np.maximum(Xhat, EPS)
 
         # Perform detection
-        deviance = compute_deviance(X, Xhat)
+        deviance = compute_deviance(Xhat, X)
         return int(any(deviance > self.threshold))
 
     def recurrent_deviance_threshold(self, data_loader, far):
@@ -197,7 +197,7 @@ class RecurrentAutoencoder(BaseAutoencoder):
             Xhat = np.maximum(Xhat, EPS)
 
             # Compute deviance
-            dev = compute_deviance(X, Xhat)
+            dev = compute_deviance(Xhat, X)
             deviance.append(dev)
 
         deviance = np.hstack(deviance)
