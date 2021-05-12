@@ -51,6 +51,9 @@ class BaseAutoencoder(nn.Module):
         self.encoder = self.build_encoder(params)
         self.decoder = self.build_decoder(params)
 
+    def save_model(self, path):
+        torch.save(self, path)
+
     def load_weights(self):
         weights_path = get_filename(self.params, 'training')
         weights = torch.load(weights_path, map_location=self.device)
