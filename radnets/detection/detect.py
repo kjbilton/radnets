@@ -4,7 +4,7 @@ Tools for performing binary anomaly detection for a single spectrum
 """
 import numpy as np
 import torch
-from .tools import get_deviance
+from .tools import compute_deviance
 from ..utils.constants import EPS
 from ..data.preprocess import _preprocess, _inv_preprocess
 
@@ -26,7 +26,7 @@ def feedforward_deviance(model, X, preprocess):
     Xhat = np.maximum(Xhat, EPS)
 
     # Perform detection
-    deviance = get_deviance(n=X, lam=Xhat)
+    deviance = compute_deviance(X, Xhat)
     return int(any(deviance > model.threshold))
 
 
@@ -64,7 +64,7 @@ def feedforward_deviance_threshold(model, data_loader, far, preprocess):
         Xhat = np.maximum(Xhat, EPS)
 
         # Compute p-values for Poisson deviance
-        _deviance = get_deviance(n=X, lam=Xhat)
+        _deviance = compute_deviance(X, Xhat)
         deviance.append(_deviance)
 
     deviance = np.hstack(deviance)
@@ -95,7 +95,7 @@ def recurrent_deviance(model, X, preprocess):
     Xhat = np.maximum(Xhat, EPS)
 
     # Perform detection
-    deviance = get_deviance(n=X, lam=Xhat)
+    deviance = compute_deviance(X, Xhat)
     return int(any(deviance > model.threshold))
 
 
@@ -124,7 +124,7 @@ def recurrent_deviance_threshold(model, data_loader, far, preprocess):
         Xhat = np.maximum(Xhat, EPS)
 
         # Compute deviance
-        dev = get_deviance(X, Xhat)
+        dev = compute_deviance(X, Xhat)
         deviance.append(dev)
 
     deviance = np.hstack(deviance)
