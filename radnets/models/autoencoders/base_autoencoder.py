@@ -4,6 +4,7 @@ Base class for all autoencoder models.
 import torch
 import torch.nn.functional as F
 from torch import nn
+
 from ..utils.view import View
 from ...utils.constants import activations
 from ...training.early_stopping import EarlyStopping

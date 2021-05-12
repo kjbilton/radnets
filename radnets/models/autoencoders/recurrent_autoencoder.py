@@ -2,11 +2,11 @@ import numpy as np
 import torch
 from torch import nn
 from torch import optim
+
 from .base_autoencoder import BaseAutoencoder
 from ...data.preprocess import _preprocess, _inv_preprocess
-from ...utils.constants import EPS
-from ...detection.tools import compute_deviance
-from ...utils.constants import recurrent_layers
+from ...utils.constants import EPS, recurrent_layers
+from ...utils.statistics import compute_deviance
 
 
 class RecurrentAutoencoder(BaseAutoencoder):

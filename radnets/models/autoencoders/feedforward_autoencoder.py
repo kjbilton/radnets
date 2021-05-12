@@ -1,9 +1,10 @@
 import numpy as np
 import torch
 from torch import optim
+
 from ...data.preprocess import _preprocess, _inv_preprocess
 from ...utils.constants import EPS
-from ...detection.tools import compute_deviance
+from ...utils.statistics import compute_deviance
 from .base_autoencoder import BaseAutoencoder
 
 

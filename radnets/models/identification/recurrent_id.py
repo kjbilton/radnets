@@ -1,10 +1,12 @@
+import numpy as np
 import torch
 from torch import nn
+import torch.nn.functional as F
 from torch import optim
 
 from .base_id import BaseModel
+from ...data.preprocess import _preprocess
 from ...training.early_stopping import EarlyStopping
-from ...detection.identify import recurrent_id_threshold
 from ...utils.constants import recurrent_layers
 
 
@@ -158,12 +160,48 @@ class RecurrentID(BaseModel):
 
         return X
 
-    def compute_threshold(self, data_loader, far):
+    def identify(self, X):
         """
+        Detect anomalous spectra using a RecurrentID.
         """
-        thresh, metrics = recurrent_id_threshold(self, data_loader, far)
+        # Prepare spectra for model
+        X = _preprocess(self, X, self.preprocess)
+        X = torch.tensor(X).float().to(self.device)
+        X = X.unsqueeze(0)
+        X_lens = [X.shape[1]]
+
+        # Perform inference
+        Yhat = self.forward(X, X_lens).squeeze()
+        Yhat = F.softmax(Yhat, dim=1).detach().cpu().numpy()
+
+        # Post-processing to get single predictions
+        predictions = np.zeros(len(Yhat))
+        outputs_norm = Yhat[:, 1:] / self.thresholds
+        alarm_mask = (outputs_norm > 1).any(axis=1)
+        predictions[alarm_mask] = outputs_norm[alarm_mask].argmax(axis=1) + 1
+        return predictions
+
+    def compute_thresholds(self, data_loader, far):
+        """
+        Computes threshold for recurrent ID models
+        """
+        predictions = []
+
+        for X, y, lens in data_loader:
+            X = X.float().to(self.device)
+
+            # Perform inference
+            Yhat = self.forward(X, lens).squeeze()
+            Yhat = F.softmax(Yhat, dim=1).detach().cpu().numpy()
+            predictions.append(Yhat)
+
+        predictions = np.vstack(predictions)[:, 1:]
+        predictions_sorted = np.sort(predictions, axis=0)[::-1]
+
+        n_fa = int(len(predictions_sorted) * far / (y.shape[2] - 1))
+        thresh = predictions_sorted[n_fa]
         self.thresholds = thresh
-        return metrics
+        return predictions
 
     def _build_recurrent(self, params):
         params = params['architecture']['recurrent'][0]

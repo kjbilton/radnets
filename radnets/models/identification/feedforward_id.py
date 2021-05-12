@@ -1,6 +1,9 @@
+import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import optim
 
+from ...data.preprocess import _preprocess
 from ...training.early_stopping import EarlyStopping
 from .base_id import BaseModel
 
@@ -97,3 +100,36 @@ class FeedForwardID(BaseModel):
             X = X[None, :].transpose(0, 1)
         X = self.front_end(X)
         return self.rear_end(X)
+
+    def identify(self, X):
+        # Prepare spectra for model
+        X = _preprocess(self, X, self.preprocess)
+        X = torch.tensor(X).float().to(self.device)
+
+        # Perform inference
+        Yhat = self.forward(X)
+        Yhat = F.softmax(Yhat, dim=1).detach().cpu().numpy()
+
+        # Post-processing to get single predictions
+        predictions = np.zeros(len(Yhat))
+        outputs_norm = Yhat[:, 1:] / self.thresholds
+        alarm_mask = (outputs_norm > 1).any(axis=1)
+        predictions[alarm_mask] = outputs_norm[alarm_mask].argmax(axis=1) + 1
+        return predictions
+
+    def compute_thresholds(self, data_loader, far):
+        predictions = []
+
+        for X, y in data_loader:
+            X = X.float()
+            X = X.to(self.device)
+            yhat = F.softmax(self.forward(X), dim=1)
+            yhat = yhat.detach().cpu().numpy()
+            predictions.append(yhat)
+
+        predictions = np.vstack(predictions)[:, 1:]
+        predictions_sorted = np.sort(predictions, axis=0)[::-1]
+        n_fa = int(len(predictions_sorted) * far / (y.shape[1] - 1))
+        thresh = predictions_sorted[n_fa]
+        self.thresholds = thresh
+        return predictions

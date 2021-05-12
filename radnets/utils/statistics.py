@@ -1,5 +1,6 @@
 from scipy.special import xlogy, gammaln
-from radnets.utils.constants import EPS
+
+from .constants import EPS
 
 
 def compute_aic(Xhat, X, n_params):
