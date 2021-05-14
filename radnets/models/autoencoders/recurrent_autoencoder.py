@@ -108,7 +108,6 @@ class RecurrentAutoencoder(BaseAutoencoder):
         X_lens :
             Contains length of each run
         """
-        # Grab dimensions for reshaping later
         batch_size, run_len, n_bins = X.size()
 
         # Put runs from all batch in a single dimension
@@ -116,24 +115,14 @@ class RecurrentAutoencoder(BaseAutoencoder):
             X = X.view(batch_size * run_len, 1, n_bins)
         else:
             X = X.view(-1, n_bins)
-
-        # Encode using convolutional features
         X = self.encoder(X)
 
         # Flatten features into single feature vectors for each run/spectrum
         X = X.view(batch_size, run_len, -1)
 
-        # Apply dropout
-        # X = self.recurrent_dropout(X)
-
-        # Pack to pass to recurrent layer
         X = nn.utils.rnn.pack_padded_sequence(X, X_lens, batch_first=True,
                                               enforce_sorted=False)
-
-        # Recurrent layer
         X, _ = self.recurrent(X)
-
-        # Unpack
         X, _ = nn.utils.rnn.pad_packed_sequence(X, batch_first=True)
 
         # Reshape for decoding
@@ -143,15 +132,13 @@ class RecurrentAutoencoder(BaseAutoencoder):
             X = X.view(batch_size * run_len, self.n_kernels_inner,
                        self.feature_size_min)
 
-        # Decoder
         X = self.decode(X)
 
-        # Reshape for turning back into runs
+        # Reshape back into runs
         X = X.view(batch_size, run_len, -1)
         return X
 
     def detect(self, X):
-        # Prepare spectra for model
         Xhat = _preprocess(self, X, self.preprocess)
         Xhat = torch.tensor(Xhat).float().to(self.device)
         Xhat = Xhat.unsqueeze(0)
@@ -178,12 +165,11 @@ class RecurrentAutoencoder(BaseAutoencoder):
         deviance = []
 
         for X, X_lens in data_loader:
-            # Prepare spectra for model
             Xhat = X.float().numpy()
             Xhat = _preprocess(self, X, self.preprocess)
-            Xhat = torch.tensor(Xhat).float()
+            Xhat = torch.tensor(Xhat).float().to(self.device)
 
-            Xhat = self.forward(Xhat.to(self.device), X_lens)
+            Xhat = self.forward(Xhat, X_lens)
             Xhat = Xhat.detach().cpu().numpy() + EPS
             X = X.numpy()
 
@@ -208,6 +194,7 @@ class RecurrentAutoencoder(BaseAutoencoder):
         return thresh, deviance
 
     def _build_recurrent(self, params):
+        """Build recurrent module that goes between encoder and decoder."""
         params = params['architecture']['recurrent'][0]
         rnn_type = params['rnn_type']
         activation = params['activation']

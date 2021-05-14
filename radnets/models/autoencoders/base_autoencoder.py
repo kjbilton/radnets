@@ -23,10 +23,8 @@ class BaseAutoencoder(nn.Module):
         self.preprocess = self.params['training']['preprocess']
         assert self.preprocess in ['none', 'standardize', 'log']
 
-        # Set loss function
         loss = params['training']['loss']
         assert loss in ['poisson', 'mse']
-
         if loss == 'poisson':
             if self.preprocess == 'none':
                 self.loss = self.poisson_loss
@@ -100,18 +98,12 @@ class BaseAutoencoder(nn.Module):
         """
         Build the encoder submodule from the specified parameters
         """
-        # Container for encoder operations
+        encoder_params = params['architecture']['encoder']
         modules = []
-
-        # Container for input sizes to each encoder layer
         n_features = params['spectral']['n_bins']
         input_sizes = [n_features]
-
-        # Container for number of input channels to each encoder layer
         input_channels = [1]
 
-        # Iterate over all layers in the encoder
-        encoder_params = params['architecture']['encoder']
         for idx, layer in enumerate(encoder_params):
 
             # Determine if data needs to be flattened (conv -> dense)
@@ -120,7 +112,6 @@ class BaseAutoencoder(nn.Module):
                   and (layer['layer_type'] == 'dense'):
                     modules.append(nn.Flatten())
 
-            # Add dense layer
             if layer['layer_type'] == 'dense':
                 n_nodes_out = layer['n_nodes_out']
                 _layer = nn.Linear(input_sizes[idx], n_nodes_out,
@@ -146,7 +137,6 @@ class BaseAutoencoder(nn.Module):
                                  bias=bias)
                 modules.append(conv)
 
-                # Add pooling
                 pool_size = layer['pool_size']
                 pool = nn.MaxPool1d(pool_size)
                 modules.append(pool)
@@ -165,16 +155,13 @@ class BaseAutoencoder(nn.Module):
             # Update the number of features in each layer
             input_sizes.append(n_features)
 
-            # Add the activation function
             if 'activation' in layer.keys():
                 modules.append(activations[layer['activation']]())
 
-            # Add batchnorm
             if 'batchnorm' in layer.keys():
                 if layer['batchnorm']:
                     modules.append(nn.BatchNorm1d(layer['n_nodes_out']))
 
-            # Add dropout
             if 'dropout' in layer.keys():
                 if layer['dropout']:
                     modules.append(nn.Dropout(p=layer['dropout']))
@@ -190,14 +177,9 @@ class BaseAutoencoder(nn.Module):
         """
         Build the decoder submodule from the specified parameters
         """
-        modules = []
-
         decoder_params = params['architecture']['decoder']
-
-        # Iterate over all layers in the encoder
+        modules = []
         for idx, layer in enumerate(decoder_params):
-
-            # Add dense layer
             if layer['layer_type'] == 'dense':
                 # Output size = input size to next layer
                 if idx != len(decoder_params) - 1:
@@ -221,7 +203,6 @@ class BaseAutoencoder(nn.Module):
                         shape = (-1, n_kernels_in, n_features)
                         modules.append(View(shape))
 
-            # Add convolutional layer and pooling
             elif layer['layer_type'] == 'convolutional':
                 n_kernels = layer['n_kernels_in']
                 pool_size = layer['pool_size']
@@ -239,11 +220,9 @@ class BaseAutoencoder(nn.Module):
                                           bias=bias)
                 modules.append(conv)
 
-            # Add the activation function
             if 'activation' in layer.keys():
                 modules.append(activations[layer['activation']]())
 
-            # Add batchnorm
             if 'batchnorm' in layer.keys():
                 if layer['batchnorm']:
                     modules.append(nn.BatchNorm1d(output_size))
@@ -262,9 +241,12 @@ class BaseAutoencoder(nn.Module):
         self.sigma_tensor = torch.tensor(self.sigma).to(self.device)
         self.mu_tensor = torch.tensor(self.mu).to(self.device)
 
-    ####################################################################
-    # Loss functions
-    ####################################################################
+    def _add_l1_regularization(self):
+        _loss = 0
+        for param in self.parameters():
+            _loss += self.l1_lambda * torch.norm(param, p=1)
+        return _loss
+
     def poisson_loss(self, Xhat, X, complete=True, eps=1.E-7):
         Xhat = F.relu(Xhat) + eps
 
@@ -276,10 +258,8 @@ class BaseAutoencoder(nn.Module):
             _loss += torch.lgamma(X + 1)
         _loss = _loss.sum()
 
-        # Add sparsity regularization
         if self.l1_lambda > 0.:
-            for param in self.parameters():
-                _loss += self.l1_lambda * torch.norm(param, p=1)
+            _loss += self._add_l1_regularization()
         return _loss
 
     def poisson_log_loss(self, Xhat, X, complete=True, eps=1.E-7):
@@ -296,8 +276,6 @@ class BaseAutoencoder(nn.Module):
 
     def mse_loss(self, Xhat, X, complete=True, eps=1.E-7):
         _loss = F.mse_loss(Xhat, X, reduction='sum')
-        # Add sparsity regularization
         if self.l1_lambda > 0.:
-            for param in self.parameters():
-                _loss += self.l1_lambda * torch.norm(param, p=1)
+            _loss += self._add_l1_regularization()
         return _loss
